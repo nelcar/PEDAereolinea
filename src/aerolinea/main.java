@@ -3,8 +3,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package aerolinea;
+
+import edu.uci.ics.jung.graph.util.EdgeType;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.Queue;
+import java.util.StringTokenizer;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -15,13 +24,18 @@ public class main extends javax.swing.JFrame {
     /**
      * Creates new form main
      */
+    private TDAGraph grafo;
+    private Queue<String> ciudades;
+    private ArrayList caminos;
+    private ArrayList numeros;
+    
     public main() {
         initComponents();
         this.setLocationRelativeTo(this);
         panelRuta.setEnabled(false);
         agregarPasaje.setEnabled(false);
         hastaComboBox.setEnabled(false);
-        calcular.setEnabled(false);
+        cargarComboBoxs();
     }
 
     /**
@@ -40,7 +54,6 @@ public class main extends javax.swing.JFrame {
         hastaComboBox = new javax.swing.JComboBox();
         jLabel3 = new javax.swing.JLabel();
         desdeComboBox = new javax.swing.JComboBox();
-        calcular = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         tablaAgregado = new javax.swing.JTable();
         jButton2 = new javax.swing.JButton();
@@ -88,7 +101,11 @@ public class main extends javax.swing.JFrame {
         jLabel3.setFont(new java.awt.Font("Tahoma", 1, 36)); // NOI18N
         jLabel3.setText("AEROLINEA");
 
-        calcular.setText("Calcular");
+        desdeComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                desdeComboBoxActionPerformed(evt);
+            }
+        });
 
         tablaAgregado.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -156,9 +173,7 @@ public class main extends javax.swing.JFrame {
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(hastaComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(calcular, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jButton2))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
@@ -187,14 +202,13 @@ public class main extends javax.swing.JFrame {
                     .addComponent(jLabel2)
                     .addComponent(hastaComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(desdeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(calcular)
                     .addComponent(jButton2))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(agregarPasaje)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(labelRuta)
@@ -206,12 +220,69 @@ public class main extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void hastaComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hastaComboBoxActionPerformed
-        // TODO add your handling code here:
+        DefaultTableModel modelo = (DefaultTableModel) tablaCalcular.getModel();
+        while(tablaCalcular.getRowCount()>0){
+            modelo.removeRow(0);
+        }
+        try {
+            File archivo = new File(".\\Precio.txt");
+            FileReader fileReader = new FileReader(archivo);
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+            String temporal, desde, hacia, precio, aereolinea;
+            StringTokenizer tokens = null;
+            while ((temporal = bufferedReader.readLine()) != null) {
+                tokens = new StringTokenizer(temporal, "@");
+                while (tokens.hasMoreTokens()) {
+                    aereolinea = tokens.nextToken();
+                    desde = tokens.nextToken();
+                    hacia = tokens.nextToken();
+                    precio = tokens.nextToken();
+                    if (desde.equals(desdeComboBox.getSelectedItem())
+                            && hacia.equals(hastaComboBox.getSelectedItem())) {
+                        double p = Double.parseDouble(precio);
+                        Object[] data = {aereolinea, desde, hacia, p, 2};
+                        modelo.addRow(data);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            //JOptionPane.showMessageDialog(null, "No se pueden cargar los vertices");
+        }
     }//GEN-LAST:event_hastaComboBoxActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void desdeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_desdeComboBoxActionPerformed
+        // TODO add your handling code here:
+        hastaComboBox.removeAllItems();
+        hastaComboBox.setEnabled(true);
+        String seleccionado = (String) desdeComboBox.getSelectedItem();
+        try {
+            File archivo = new File(".\\Precio.txt");
+            FileReader fileReader = new FileReader(archivo);
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+            String temporal, desde, hacia, precio, aereolinea;
+            StringTokenizer tokens = null;
+            while ((temporal = bufferedReader.readLine()) != null) {
+                tokens = new StringTokenizer(temporal, "@");
+                while (tokens.hasMoreTokens()) {
+                    aereolinea = tokens.nextToken();
+                    desde = tokens.nextToken();
+                    hacia = tokens.nextToken();
+                    precio = tokens.nextToken();
+                    if (desde.equals(seleccionado)) {
+                        hastaComboBox.addItem(hacia);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "No se pueden cargar los vertices");
+        }
+    }//GEN-LAST:event_desdeComboBoxActionPerformed
 
     /**
      * @param args the command line arguments
@@ -247,10 +318,13 @@ public class main extends javax.swing.JFrame {
             }
         });
     }
-
+    
+    private void cargarCombobox() {
+        desdeComboBox.removeAllItems();
+        
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton agregarPasaje;
-    private javax.swing.JButton calcular;
     private javax.swing.JComboBox desdeComboBox;
     private javax.swing.JComboBox hastaComboBox;
     private javax.swing.JButton jButton2;
@@ -264,4 +338,18 @@ public class main extends javax.swing.JFrame {
     private javax.swing.JTable tablaAgregado;
     private javax.swing.JTable tablaCalcular;
     // End of variables declaration//GEN-END:variables
+    private void cargarComboBoxs() {
+        desdeComboBox.removeAllItems();
+        try {
+            File archivo = new File(".\\Vertices.txt");
+            FileReader fileReader = new FileReader(archivo);
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+            String temporal, desde;
+            while ((temporal = bufferedReader.readLine()) != null) {
+                desdeComboBox.addItem(temporal);
+            }
+        } catch (Exception e) {
+            
+        }
+    }
 }
