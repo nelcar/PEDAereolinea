@@ -60,7 +60,7 @@ class MyEdge {
 
     @Override
     public String toString() {
-        return "\n\n\n" + "Precio: " + precio + "\nAerolinea: " + aerolinea + "\nDesde: " + desde + ", Hacia: " + hacia;
+        return aerolinea + "-" + precio + "-" + desde + "-" + hacia + "-";
     }
 
 }
